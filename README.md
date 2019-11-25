@@ -26,6 +26,7 @@
 - Plotted hists of attendance for each team 
 - Plotted bar charts of different variables for each team
 - Plotted bar charts of attendance for days of the week
+- Plotted autocorrelation for each team
 
 ### Modelling
 
