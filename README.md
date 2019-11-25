@@ -1,5 +1,8 @@
 # <center>NBA GAME ATTENDANCE ANALYSIS</center>
 
+### Usage 
+in terminal in correct dir: conda env create -f environment.yml 
+
 ### Goal
 
 - Analyze time-series data of game attendance and predict future attendances. Can base more complicated models off of additional features
