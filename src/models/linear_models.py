@@ -108,7 +108,8 @@ def elastic_net(X_train, y_train, cv = 5):
 	# 	raise ValueError('Numerical features must be standardized')
 
 	l1_ratios = np.geomspace(1e-6,1,100)
-	model = ElasticNetCV(l1_ratio=l1_ratios, n_alphas=100, cv = 5, verbose = 0, n_jobs = -1).fit(X_train, y_train)
+	model = ElasticNetCV(l1_ratio=l1_ratios, n_alphas=100, cv = 5, verbose = 0, 
+	                     n_jobs = -1).fit(X_train, y_train)
 	return model
 
 def huber(X_train, y_train, cv = 5):
@@ -118,7 +119,8 @@ def huber(X_train, y_train, cv = 5):
 	to_score, scoring = metrics.create_metrics()
 	param_grid = {'alpha': np.linspace(1e-6, 1e6+1, 50)}
 	model = HuberRegressor()
-	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, n_jobs = -1, iid = False, cv = cv,
+	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, 
+	                        n_jobs = -1, pre_dispatch = 6, iid = False, cv = cv,
 	refit = 'Mean Absolute Error')
 	fitted_model = model_cv.fit(X_train, y_train)
 	return fitted_model
@@ -131,7 +133,8 @@ def support_vector_machine(X_train, y_train, cv = 5):
 	to_score, scoring = metrics.create_metrics()
 	param_grid = {'C': [2e-5,2e-3,2e-1,2e1,2e3,2e5,2e7,2e9,2e11]}
 	model = LinearSVR(dual = False, random_state = 18, loss = 'squared_epsilon_insensitive')
-	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, n_jobs = -1, iid = False, cv = cv,
+	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, 
+	                        n_jobs = -1,  pre_dispatch = 6, iid = False, cv = cv,
 	refit = 'Mean Absolute Error')
 	fitted_model = model_cv.fit(X_train, y_train)
 	return fitted_model

@@ -16,9 +16,9 @@ def collect_statistics(name, X_train, X_test, y_train, y_test):
 	X_test = X_test.copy()
 	y_train = y_train.copy()
 	y_test = y_test.copy()
-	X_train_s = split.standardize(X_train)
-	X_test_s = split.standardize(X_test)
-	X_train_pca, X_test_pca = decomposition.pca(X_train, X_test)
+	X_train_s = split.standardize(name,X_train)
+	X_test_s = split.standardize(name, X_test)
+	X_train_pca, X_test_pca = decomposition.pca(name,X_train, X_test)
 
 	variation_strings = ['', ' with Standardized Features', ' with PCA']
 	variation_training = [X_train, X_train_s, X_train_pca]
