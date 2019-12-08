@@ -120,7 +120,7 @@ def huber(X_train, y_train, cv = 5):
 	param_grid = {'alpha': np.linspace(1e-6, 1e6+1, 50)}
 	model = HuberRegressor()
 	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, 
-	                        n_jobs = -1, pre_dispatch = 6, iid = False, cv = cv,
+	                        n_jobs = -1, pre_dispatch = 4, iid = False, cv = cv,
 	refit = 'Mean Absolute Error')
 	fitted_model = model_cv.fit(X_train, y_train)
 	return fitted_model
@@ -134,7 +134,7 @@ def support_vector_machine(X_train, y_train, cv = 5):
 	param_grid = {'C': [2e-5,2e-3,2e-1,2e1,2e3,2e5,2e7,2e9,2e11]}
 	model = LinearSVR(dual = False, random_state = 18, loss = 'squared_epsilon_insensitive')
 	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = to_score, 
-	                        n_jobs = -1,  pre_dispatch = 6, iid = False, cv = cv,
+	                        n_jobs = -1,  pre_dispatch = 4, iid = False, cv = cv,
 	refit = 'Mean Absolute Error')
 	fitted_model = model_cv.fit(X_train, y_train)
 	return fitted_model

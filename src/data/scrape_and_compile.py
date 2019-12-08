@@ -38,7 +38,7 @@ def scrape_and_compile(start_year=1989, end_year=2021,
 				frozenset({'San Antonio Spurs', 'Los Angeles Lakers'}),
 				frozenset({'Phoenix Suns', 'San Antonio Spurs'})}
 
-	pop_yr_df = pd.read_csv(Path().resolve().parent.parent.joinpath('data', 'raw', 'popularity_data.csv'), index_col = 0)
+	pop_yr_df = pd.read_csv(Path().resolve().joinpath('data', 'raw', 'popularity_data.csv'), index_col = 0)
 	pop_yr_df.columns = pd.to_datetime(pop_yr_df.columns)
 	all_data_df = pd.DataFrame()
 	for year in np.arange(start_year, end_year):
@@ -60,7 +60,6 @@ def scrape_and_compile(start_year=1989, end_year=2021,
 			data_df = pd.DataFrame(data=data[1:], columns=col_labels[1:])
 			both_df = pd.concat([dates_df, data_df], axis=1)
 			year_data_df = year_data_df.append(both_df, ignore_index=True)
-
 
 		# Combine date and time (Games before 2000 seem to not have time component)
 		try:
@@ -153,18 +152,24 @@ def scrape_and_compile(start_year=1989, end_year=2021,
 									
 		# From point data, add last five game record for each game
 		year_data_df['Last Five'] = 0
+		year_data_df['Capacity'] = np.nan
 		for team in pop_yr_df.index.values:
-			  year_data_df['Win?'] = 0
-			  year_data_df.loc[((year_data_df["Home"] == team) & (year_data_df["V PTS"] < year_data_df['H PTS'])) |
-			  ((year_data_df["Visitor"] == team) & (year_data_df["V PTS"] > year_data_df['H PTS'])), "Win?".format(team)] = 1
-			  year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), 'Curr Win %'] = \
-			  year_data_df.loc[(year_data_df["Home"] == team) | (
-				  year_data_df["Visitor"] == team), "Win?".format(team)].expanding().mean()
-			  year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), 'Last Five'] = \
-			  year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), "Win?"].\
-			  rolling(5, min_periods=1).sum()
-			  year_data_df = year_data_df.drop(["Win?"], axis=1)
-
+			year_data_df['Win?'] = 0
+			year_data_df.loc[((year_data_df["Home"] == team) & (year_data_df["V PTS"] < year_data_df['H PTS'])) |
+			((year_data_df["Visitor"] == team) & (year_data_df["V PTS"] > year_data_df['H PTS'])), "Win?".format(team)] = 1
+			year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), 'Curr Win %'] = \
+			year_data_df.loc[(year_data_df["Home"] == team) | 
+			(year_data_df["Visitor"] == team), "Win?".format(team)].expanding().mean()
+			year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), 'Last Five'] = \
+			year_data_df.loc[(year_data_df["Home"] == team) | (year_data_df["Visitor"] == team), "Win?"].\
+			rolling(5, min_periods=1).sum()
+			year_data_df = year_data_df.drop(["Win?"], axis=1)
+			try:
+				year_data_df.loc[year_data_df['Home'] == team, 'Capacity'] = \
+				max(year_data_df.loc[year_data_df['Home'] == team, "Attendance"].values)
+			except:
+				continue
+			 
 		# Day of the week game was on and month
 		year_data_df['Day of Week'] = year_data_df['Time'].dt.day_name()
 		year_data_df['Month'] = year_data_df['Time'].dt.month_name()

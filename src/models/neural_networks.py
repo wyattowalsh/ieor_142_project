@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import src.data.train_test_split as split
 import src.features.decomposition as decomposition
 import src.models.metrics as metrics
@@ -8,6 +9,7 @@ from keras.layers import Dense, Dropout, Activation
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.wrappers.scikit_learn import KerasRegressor
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, TimeSeriesSplit
 
 
 def collect_statistics(name, X_train, X_test, y_train, y_test):
@@ -23,7 +25,7 @@ def collect_statistics(name, X_train, X_test, y_train, y_test):
 	variation_strings = ['', ' with Standardized Features', ' with PCA']
 	variation_training = [X_train, X_train_s, X_train_pca]
 	variation_test = [X_test, X_test_s, X_test_pca]
-	models = [simple_network]
+	models = [single_layer_network]
 	model_names = ["Simple Network"]
 	regression_statistics = pd.DataFrame()
 	for i,model in enumerate(models):
@@ -37,13 +39,15 @@ def collect_statistics(name, X_train, X_test, y_train, y_test):
 	return regression_statistics
 
 
-def simple_network(X_train, X_test, y_train):
+def single_layer_network(X_train, X_test, y_train, neurons):
 	"""
 
 	"""
-
+	X_train = X_train.copy()
+	X_test = X_test.copy()
+	y_train = y_train.copy()
 	net = Sequential()
-	net.add(Dense(15, activation='relu', input_shape=(X_train.shape[1],)))
+	net.add(Dense(neurons, activation='relu', input_shape=(X_train.shape[1],)))
 	net.add(Dense(1, activation='linear'))
 	optimizer = Adam()
 	net.compile(optimizer=optimizer, loss='mean_squared_error')
@@ -51,6 +55,28 @@ def simple_network(X_train, X_test, y_train):
 	predictions = net.predict(X_test)
 	return predictions
 
+def single_layer_network_grid_cv(X_train, y_train, cv = TimeSeriesSplit(5)):
+	X_train = X_train.copy()
+	y_train = y_train.copy()
+	to_score = metrics.create_metrics()[0]
+
+	def create_net(X_train = X_train, learning_rate = 0.001):
+		net = Sequential()
+		net.add(Dense(10, activation = 'relu', input_shape = (X_train.shape[1],)))
+		net.add(Dense(1, activation='linear'))
+		optimizer = Adam(learning_rate = learning_rate)
+		net.compile(optimizer = optimizer, loss = 'mean_squared_error')
+		return net
+
+	param_grid = {'batch_size': [4, 8,16,32,64,128,256,512,1028],
+	'epochs': [25,50,100]},
+	# 'learning_rate': [1e-5,1e-4,1e-3,1e-2,1e-1]}
+
+	net = KerasRegressor(build_fn = create_net, verbose = 0)
+	net_cv = GridSearchCV(estimator = net, param_grid = param_grid, n_jobs = -1, pre_dispatch = 16,
+	refit= "Mean Absolute Error", cv = cv, scoring = to_score).fit(X_train, y_train)
+
+	return net_cv
 
 
 
@@ -61,8 +87,7 @@ def simple_network(X_train, X_test, y_train):
 
 
 
-
-# def create_net(neurons=10, neurons_hl=10, layers=0, learning_rate=0.001, activations_1='relu', activations_2='relu'):
+# def create_net(neurons=10, neurons_hl=10, layers=0, learning_rate=0.001, activations_1='relu', activationsss_2='relu'):
 #     net = Sequential()
 #     net.add(Dense(neurons, activation=activations_1,
 #                   input_shape=(X_train.shape[1],)))

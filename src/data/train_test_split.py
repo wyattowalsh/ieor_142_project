@@ -14,9 +14,8 @@ def split(dataset):
 	X_train, X_test, y_train, y_test = train_test_split(dataset.drop(["Attendance"], axis=1), 
 	                                                    dataset["Attendance"], shuffle=False)
 	train = pd.concat([X_train,y_train],axis = 1)
-	X_train = pd.get_dummies(X_train, columns=["Day of Week", 'Month', "Last Five"])
-	X_test = pd.get_dummies(X_test, columns=["Day of Week", 'Month', "Last Five"])
-
+	X_train = pd.get_dummies(X_train, columns=["Visitor", "Day of Week", 'Month', "Last Five"])
+	X_test = pd.get_dummies(X_test, columns=["Visitor", "Day of Week", 'Month', "Last Five"])
 	return X_train, X_test, y_train, y_test, train
 
 def standardize(name, X):
