@@ -43,6 +43,9 @@ def create_datasets():
 	dataset_1()
 	dataset_2()
 	dataset_3()
+	dataset_3_1()
+	dataset_3_2()
+	dataset_3_3()
 
 def get_number_numerical(name):
 	if name == 'dataset_1':
@@ -125,5 +128,20 @@ def dataset_3():
 	data = load_dataset('dataset_2')
 	data = data.loc[data.index.year >= 2004]	
 	save_dataset('dataset_3', data)
+
+def dataset_3_1():
+	data = load_dataset('dataset_3')
+	data = data.drop(['Capacity', 'Curr Win %', 'LS Win %', 'Last Game'], axis = 1)
+	save_dataset("dataset_3_1", data)
+
+def dataset_3_2():
+	data = load_dataset('dataset_3')
+	data = data.drop(['Last Attendance vs Opp', 'V Pop'], axis = 1)
+	save_dataset("dataset_3_2", data)
+
+def dataset_3_3():
+	data = load_dataset('dataset_3')
+	data = data.drop(['Curr Win %', 'V Pop', 'H Pop', 'Last Attendance vs Opp'], axis = 1)
+	save_dataset("dataset_3_3", data)
 
 
