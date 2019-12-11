@@ -5,13 +5,16 @@ import pandas as pd
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-def collect_tests(name, X_train, y_train):
+
+
+def collect_tests(name):
 	'''Aggregates statistical test data for a dataset into a single DataFrame for notebook presentation.
 
 	'''
-
-	X_train = X_train.copy()
-	y_train = y_train.copy()
+	sets = split.split_subsets(name)
+	name = name[0]
+	X_train = sets[name][0]
+	y_train = sets[name][2]
 	vif = find_vifs(name, X_train).sort_index(0)
 	sig = find_numerical_significance(name, X_train, y_train).sort_index(0)
 	return pd.concat([vif, sig], axis = 1)
@@ -22,8 +25,8 @@ def find_vifs(name, X_train, tolerance = 5):
 	'''
 
 	X_train = X_train.copy()
-	number_numerical = ds.get_number_numerical(name)
-	train_num = X_train.iloc[:,0:number_numerical]
+	number_numerical = ds.get_number_numerical()
+	train_num = X_train.iloc[:,0:number_numerical[name]]
 	vif = pd.DataFrame(index = train_num.columns)
 	vif_x = train_num.copy()
 	cols = vif_x.columns.values
@@ -51,12 +54,12 @@ def find_numerical_significance(name, X_train, y_train):
 
 	X_train = X_train.copy()
 	y_train = y_train.copy()
-	number_numerical = ds.get_number_numerical(name)
-	train_num = X_train.iloc[:,0:number_numerical]
+	number_numerical = ds.get_number_numerical()
+	train_num = X_train.iloc[:,0:number_numerical[name]]
 
 	f_r = pd.DataFrame(f_regression(train_num, y_train)[1], index = train_num.columns.values, 
 					   columns = ["Numerical Feature Significance (P-Value) {}".format(name)])
-	mir = pd.DataFrame(mutual_info_regression(train_num, y_train), index = train_num.columns.values, 
+	mir = pd.DataFrame(mutual_info_regression(train_num, y_train, random_state = 18), index = train_num.columns.values, 
 					   columns = ["Estimated Mutual Information {}".format(name)])
 	df = pd.concat([f_r,mir], axis =1)
 

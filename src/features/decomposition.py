@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import src.data.datasets as ds
@@ -7,7 +6,6 @@ import src.models.metrics as metrics
 from pathlib import Path
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import GridSearchCV
 
 
 def pca(name, X_train, X_test):
@@ -63,7 +61,7 @@ def pca_cv(name, X_train, X_test, y_train, y_test, save = False):
 		df = pd.concat([df, preds], axis = 0)
 
 	if save:
-		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes', '{}.csv'.format('pca_cv'))
+		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes', 'pca', '{}_pca_cv.csv'.format(name))
 		df.to_csv(to_save)
-		
+
 	return df

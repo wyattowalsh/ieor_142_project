@@ -3,6 +3,7 @@ import pandas as pd
 import warnings
 from pathlib import Path
 
+
 def load_dataset(name): 
 	'''
 
@@ -16,15 +17,17 @@ def load_dataset(name):
 	except:
 		warnings.warn('{} does not exist'.format(name))
 
-def load_datasets(names = ['dataset_1',"dataset_2", "dataset_3"]):
+def load_datasets(names = ['dataset_1','dataset_1_1', 'dataset_1_3',
+                  "dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+                  "dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]):
 	'''
 
 	'''
 
 	datasets = {}
-	for i,name in enumerate(names):
-		datasets[str(i+1)] = load_dataset(name)
-		if datasets[str(i+1)] is None:
+	for name in names:
+		datasets[name] = load_dataset(name)
+		if datasets[name] is None:
 			warnings.warn('{} does not exist'.format(name))
 			return
 	return datasets
@@ -41,24 +44,36 @@ def save_dataset(name, data):
 def create_datasets():
 	dataset()
 	dataset_1()
+	dataset_1_1()
+	dataset_1_3()
 	dataset_2()
+	dataset_2_1()
+	dataset_2_2()
+	dataset_2_3()
 	dataset_3()
 	dataset_3_1()
 	dataset_3_2()
 	dataset_3_3()
 
-def get_number_numerical(name):
-	if name == 'dataset_1':
-		numerical_features = 7
-	elif name == 'dataset_2':
-		numerical_features = 7
-	elif name == 'dataset_3':
-		numerical_features = 7
-	# elif name == 'dataset_2':
-	# 	numerical_features = ["Last Game", "Last Attendance vs Opp"]
-	# elif name == 'dataset_3':
-	# 	numerical_features = ["Last Game", "Capacity", "Last Attendance vs Opp"]
+def get_number_numerical():
+	'''
+
+	'''
+
+	numerical_features = {'dataset_1': 5,
+	'dataset_1_1': 2,
+	'dataset_1_3': 3,
+	'dataset_2': 5,
+	'dataset_2_1': 2,
+	'dataset_2_2': 4,
+	'dataset_2_3': 3,
+	'dataset_3': 7,
+	'dataset_3_1': 3,
+	'dataset_3_2': 5,
+	'dataset_3_3': 3}
+	
 	return numerical_features
+
 
 def dataset():
 	"""This dataset contains games from all the years scraped.
@@ -100,10 +115,31 @@ def dataset_1():
 	'''
 
 	'''
+
 	data = load_dataset('dataset')
 	data = data.drop(['V Pop', "H Pop", 'Rivalry?'], axis = 1)
+	data = data.loc[data.index.year >= 1999]
 	save_dataset('dataset_1', data)
 	return
+
+def dataset_1_1():
+	'''
+
+	'''
+
+	data = load_dataset('dataset_1')
+	data = data.drop(['LS Win %', 'Last Attendance vs Opp', 'Last Game'], axis = 1)
+	save_dataset('dataset_1_1', data)
+
+def dataset_1_3():
+	'''
+
+	'''
+
+	data = load_dataset('dataset_1')
+	data = data.drop(['Curr Win %', 'Last Attendance vs Opp'], axis = 1)
+	save_dataset('dataset_1_3', data)
+
 
 def dataset_2():
 	'''
@@ -119,13 +155,52 @@ def dataset_2():
 		earliest = pd.to_numeric(stadiums.loc[stadiums['Home'] == team]['Opened'].values[0])
 		data.loc[data['Home'] == team] = data.loc[data['Home'] == team].loc[data.loc[data['Home'] == team].index >= pd.Timestamp(earliest, 7, 1)]
 
-	data = data.drop(["Home"], axis = 1)
+	data = data.drop(["V Pop", "H Pop",'Rivalry?'], axis = 1)
 	data = data.dropna()
+	data = data.loc[data.index.year >= 1999]
 	save_dataset('dataset_2', data)
 	return 
 
-def dataset_3():
+def dataset_2_1():
+	'''
+
+	'''
+
 	data = load_dataset('dataset_2')
+	data = data.drop(['LS Win %', 'Last Game', 'Last Attendance vs Opp'], axis = 1)
+	save_dataset('dataset_2_1', data)
+
+def dataset_2_2():
+	'''
+
+	'''
+
+	data = load_dataset('dataset_2')
+	data = data.drop(['Capacity'], axis = 1)
+	save_dataset('dataset_2_2', data)
+
+def dataset_2_3():
+	'''
+
+	'''
+
+	data = load_dataset('dataset_2')
+	data = data.drop(['Curr Win %', 'Last Attendance vs Opp'], axis = 1)
+	save_dataset('dataset_2_3', data)
+
+def dataset_3():
+
+	data = load_dataset('dataset')
+	stadiums = pd.read_csv(Path().resolve().joinpath('data', 'raw', 'stadiums_data.csv'), index_col = 0)
+
+	# Remove games that were played in old stadiums
+	teams = data['Home'].unique()
+	for team in teams:
+		earliest = pd.to_numeric(stadiums.loc[stadiums['Home'] == team]['Opened'].values[0])
+		data.loc[data['Home'] == team] = data.loc[data['Home'] == team].loc[data.loc[data['Home'] == team].index >= pd.Timestamp(earliest, 7, 1)]
+
+	data = data.drop(['Rivalry?'], axis = 1)
+	data = data.dropna()
 	data = data.loc[data.index.year >= 2004]	
 	save_dataset('dataset_3', data)
 

@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 
 
 def pca(name, X_train, y_trainsave = False):
