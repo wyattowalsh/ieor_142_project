@@ -11,9 +11,12 @@ if anaconda is already installed (conda commands can already be run):
   	- ensure that environment is activated ( (ieor_142_project) should appear at beginning of terminal prompt)
    		- if not, then: `terminal:` conda activate ieor_142_project
 - else if local conda environemnt is already created (to check `terminal:` conda env list ; ieor_142_project should appear in list):
+	- ensure that environment is activated ( (ieor_142_project) should appear at beginning of terminal prompt)
+   		- if not, then: `terminal:` conda activate ieor_142_project
 	- `terminal:` conda env update --prefix ./env --file environment.yml  --prune
 		- This should lead to any missing packages being installed
 		
 else if anaconda not yet installed (conda commands cannot be run):
 - follow instructions here: https://docs.conda.io/en/latest/miniconda.html
+- Once installed follow instructions above
  
