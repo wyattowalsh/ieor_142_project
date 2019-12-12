@@ -2,12 +2,11 @@ import src.data.datasets as ds
 import src.data.train_test_split as split
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-
-
-def collect_tests(name):
+def collect_tests(name, save = False):
 	'''Aggregates statistical test data for a dataset into a single DataFrame for notebook presentation.
 
 	'''
@@ -17,7 +16,13 @@ def collect_tests(name):
 	y_train = sets[name][2]
 	vif = find_vifs(name, X_train).sort_index(0)
 	sig = find_numerical_significance(name, X_train, y_train).sort_index(0)
-	return pd.concat([vif, sig], axis = 1)
+	df = pd.concat([vif, sig], axis = 1)
+
+	if save:
+		to_save = Path().resolve().joinpath('features', 'statistical_tests', '{}.csv'.format(name))
+		df.to_csv(to_save)
+
+	return df
 
 def find_vifs(name, X_train, tolerance = 5):
 	'''Iteratively drops features from set of numerical training features based off of VIF scores.
@@ -58,9 +63,9 @@ def find_numerical_significance(name, X_train, y_train):
 	train_num = X_train.iloc[:,0:number_numerical[name]]
 
 	f_r = pd.DataFrame(f_regression(train_num, y_train)[1], index = train_num.columns.values, 
-					   columns = ["Numerical Feature Significance (P-Value) {}".format(name)])
+					   columns = ["F-test (P-Value)"])
 	mir = pd.DataFrame(mutual_info_regression(train_num, y_train, random_state = 18), index = train_num.columns.values, 
-					   columns = ["Estimated Mutual Information {}".format(name)])
+					   columns = ["Estimated Mutual Information"])
 	df = pd.concat([f_r,mir], axis =1)
 
 	return df

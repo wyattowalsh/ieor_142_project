@@ -20,6 +20,16 @@ def split(dataset):
 	train = pd.concat([X_train,y_train],axis = 1)
 	return X_train, X_test, y_train, y_test, train
 
+def split_subset(name):
+	'''
+
+	'''
+
+	dataset = ds.load_dataset(name)
+	X_train_0, X_test_0, y_train_0, y_test_0, train_0 = split(dataset)
+	splits = [X_train_0, X_test_0, y_train_0, y_test_0, train_0]
+	return splits
+
 def split_subsets(names):
 	'''
 

@@ -3,6 +3,43 @@ import pandas as pd
 import warnings
 from pathlib import Path
 
+def get_removed_features():
+	'''
+
+	'''
+	file_names = ['dataset_1_1', 'dataset_1_3',
+	'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+	"dataset_3_1", "dataset_3_2", "dataset_3_3"]
+
+	removed_features = ['LS Win %, Last Game, Last Attendance vs Opp',
+	'Curr Win %, Last Attendance vs Opp',
+	'LS Win %, Last Game, Last Attendance vs Opp',
+	'Capacity',
+	'Curr Win %, Last Attendance vs Opp',
+	'Curr Win %, LS Win %, Last Game, Capacity',
+	'V Pop, Last Attendance vs Opp',
+	'V Pop, H Pop, Curr Win %, Last Attendance vs Opp']
+
+	rf_dict = dict(zip(file_names, removed_features))
+
+	return rf_dict
+
+def get_names():
+	'''
+
+	'''
+
+	file_names = ['dataset_1','dataset_1_1', 'dataset_1_3',
+	"dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+	"dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]
+
+	names = ['Dataset 1', "Dataset 1 Subset 1", "Dataset 1 Subset 2",
+	'Dataset 2', "Dataset 2 Subset 1", "Dataset 2 Subset 2", "Dataset 2 Subset 3",
+	"Dataset 3", "Dataset 3 Subset 1", "Dataset 3 Subset 2", "Dataset 3 Subset 3"]
+
+	name_dict = dict(zip(file_names, names))
+
+	return name_dict
 
 def load_dataset(name): 
 	'''
@@ -11,15 +48,15 @@ def load_dataset(name):
 
 	try: 
 		dataset = pd.read_csv(Path().resolve().joinpath('data', 'processed', '{}.csv'.format(name)), 
-		                      index_col = 0)
+							  index_col = 0)
 		dataset.index = pd.to_datetime(dataset.index)
 		return dataset
 	except:
 		warnings.warn('{} does not exist'.format(name))
 
 def load_datasets(names = ['dataset_1','dataset_1_1', 'dataset_1_3',
-                  "dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
-                  "dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]):
+				  "dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+				  "dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]):
 	'''
 
 	'''
@@ -201,7 +238,7 @@ def dataset_3():
 
 	data = data.drop(['Rivalry?'], axis = 1)
 	data = data.dropna()
-	data = data.loc[data.index.year >= 2004]	
+	data = data.loc[data.index.year >= 2004]    
 	save_dataset('dataset_3', data)
 
 def dataset_3_1():

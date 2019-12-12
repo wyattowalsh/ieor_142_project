@@ -18,10 +18,10 @@ def create_metrics():
 	mae_custom = make_scorer(mean_absolute_error_custom, greater_is_better = False)
 	rmse_custom = make_scorer(root_mean_square_error, greater_is_better = False)
 	mape_custom = make_scorer(mean_absolute_percentage_error, greater_is_better = False)
-	to_score = {'R^2': r2, "Explained Variance Score": evs,
+	to_score = {'$R^2$': r2, "Explained Variance Score": evs,
 			   "Mean Absolute Error": mae_custom, "Root Mean Square Error": rmse_custom,
 			   "Mean Absolute Percent Error": mape_custom}
-	scoring = {'R^2': r2_score, "Explained Variance Score": explained_variance_score,
+	scoring = {'$R^2$': r2_score, "Explained Variance Score": explained_variance_score,
 			   "Mean Absolute Error": mean_absolute_error_custom, 
 			   "Root Mean Square Error": root_mean_square_error,
 			   "Mean Absolute Percent Error": mean_absolute_percentage_error}
