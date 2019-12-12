@@ -1,6 +1,7 @@
 import src.data.datasets as ds
 import src.data.train_test_split as split
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -29,136 +30,156 @@ def create_plots(name, save = False):
 	'''
 
 	'''
+
+
 	dset = ds.load_dataset(name)
 	train = dset
 	sns.set_style("whitegrid")
 	sns.set_palette(sns.color_palette('bright',12))
 
+	fig = plt.figure(figsize=(40, 27))
+	gs = gridspec.GridSpec(4, 4)
+	ax00 = plt.subplot(gs[0,0])
+	ax01 = plt.subplot(gs[0,1])
+	ax02 = plt.subplot(gs[0,2])
+	ax03 = plt.subplot(gs[0,3])
+	ax10= plt.subplot(gs[1,0])
+	ax11= plt.subplot(gs[1,1])
+	ax12 = plt.subplot(gs[1,2])
+	ax13 = plt.subplot(gs[1,3])
+	ax20 = plt.subplot(gs[2,0])
+	ax21 = plt.subplot(gs[2,1])
+	ax22 = plt.subplot(gs[2,2])
+	ax23 = plt.subplot(gs[2,3])
+	ax30 = plt.subplot(gs[3,0:2])
+	ax31 = plt.subplot(gs[3,2:4])
+
+
 	bins = np.arange(4000, 26001, 500)
-	fig, ax = plt.subplots(nrows = 3, ncols = 4, figsize=(40, 20))
-	sns.distplot(train['Attendance'], ax=ax[0][0], kde=False, norm_hist=True, bins = bins)
-	ax[0][0].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[0][0].set_ylabel('Percent per person', fontsize = 20) 
-	ax[0][0].tick_params(labelsize=15)
-	ax[0][0].set_title(label = "Overall Attendance", fontsize = 25)
+	# fig, ax = plt.subplots(nrows = 4, ncols = 4, figsize=(40, 20))
+	sns.distplot(train['Attendance'], ax=ax00, kde=False, norm_hist=True, bins = bins)
+	ax00.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax00.set_ylabel('Percent per person', fontsize = 20) 
+	ax00.tick_params(labelsize=15)
+	ax00.set_title(label = "Overall Attendance", fontsize = 25)
 
 	days = train['Day of Week'].unique()
 	for day in days:
 		sns.distplot(train.loc[train['Day of Week'] == day]['Attendance'],
-							ax = ax[0][1], kde= False, norm_hist= True, bins = bins)
-	ax[0][1].set_title(label = "Attendance per Day", fontsize = 25)
-	ax[0][1].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[0][1].set_ylabel('Percent per person', fontsize = 20) 
-	ax[0][1].tick_params(labelsize=15)
-	ax[0][1].legend(days,loc="upper right", fontsize=15)
+							ax = ax01, kde= False, norm_hist= True, bins = bins)
+	ax01.set_title(label = "Attendance per Day", fontsize = 25)
+	ax01.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax01.set_ylabel('Percent per person', fontsize = 20) 
+	ax01.tick_params(labelsize=15)
+	ax01.legend(days,loc="upper right", fontsize=15)
 
 	grouped = train[['Day of Week', 'Attendance']].groupby('Day of Week').mean()
 	order = ['Monday', "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
-	             saturation=1, ax=ax[2][0], palette = sns.color_palette("cubehelix", 7))
-	ax[2][0].set_xlim(16500,19000)
-	ax[2][0].set_xticks(range(16500,19001,500))
-	ax[2][0].set_xlabel('Average Attendance (# of people)', fontsize = 20)
-	ax[2][0].set_ylabel('Day of the Week', fontsize = 20) 
-	ax[2][0].tick_params(labelsize=15)
-	ax[2][0].set_title(label = "Average Attendance per Day", fontsize = 25)
+	             saturation=1, ax=ax20, palette = sns.color_palette("cubehelix", 7))
+	ax20.set_xlim(16500,19000)
+	ax20.set_xticks(range(16500,19001,500))
+	ax20.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax20.set_ylabel('Day of the Week', fontsize = 20) 
+	ax20.tick_params(labelsize=15)
+	ax20.set_title(label = "Average Attendance per Day", fontsize = 25)
 
 	months = train['Month'].unique()
 	for month in months:
 		sns.distplot(train.loc[train['Month'] == month]['Attendance'],
-							ax = ax[0][2], kde= False, norm_hist= True, bins = bins)
-	ax[0][2].set_title(label = "Attendance per Month", fontsize = 25)
-	ax[0][2].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[0][2].set_ylabel('Percent per person', fontsize = 20) 
-	ax[0][2].tick_params(labelsize=15)
-	ax[0][2].legend(months,loc="upper right", fontsize=15)
+							ax = ax02, kde= False, norm_hist= True, bins = bins)
+	ax02.set_title(label = "Attendance per Month", fontsize = 25)
+	ax02.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax02.set_ylabel('Percent per person', fontsize = 20) 
+	ax02.tick_params(labelsize=15)
+	ax02.legend(months,loc="upper right", fontsize=15)
 
 	grouped = train[['Month', 'Attendance']].groupby('Month').mean()
 	order = ['October', 'November', 'December', 'January','February', 'March', 'April', 'May', 'June']
 	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
-	             saturation=1, ax=ax[2][1], palette = sns.color_palette("cubehelix", 9))
-	ax[2][1].set_xlim(16500,19500)
-	ax[2][1].set_xticks(range(16500,19501,500))
-	ax[2][1].set_xlabel('Average Attendance (# of people)', fontsize = 20)
-	ax[2][1].set_ylabel('Month', fontsize = 20) 
-	ax[2][1].tick_params(labelsize=15)
-	ax[2][1].set_title(label = "Average Attendance per Month", fontsize = 25)
+	             saturation=1, ax=ax21, palette = sns.color_palette("cubehelix", 9))
+	ax21.set_xlim(16500,20000)
+	ax21.set_xticks(range(16500,20001,500))
+	ax21.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax21.set_ylabel('Month', fontsize = 20) 
+	ax21.tick_params(labelsize=15)
+	ax21.set_title(label = "Average Attendance per Month", fontsize = 25)
 
 	train['Year'] = train.index.year
 	grouped = train[['Year','Attendance']].groupby('Year').mean()
 	order = np.sort(train.index.year.unique())
 	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
-	             saturation=1, ax=ax[2][2], palette = sns.color_palette("cubehelix", 13))
-	ax[2][2].set_xlim(16500,18500)
-	ax[2][2].set_xticks(range(16500,18501,500))
-	ax[2][2].set_xlabel('Average Attendance (# of people)', fontsize = 20)
-	ax[2][2].set_ylabel('Year', fontsize = 20) 
-	ax[2][2].tick_params(labelsize=15)
-	ax[2][2].set_title(label = "Average Attendance per Year", fontsize = 25)
+	             saturation=1, ax=ax22, palette = sns.color_palette("cubehelix", 13))
+	ax22.set_xlim(16500,18500)
+	ax22.set_xticks(range(16500,18501,500))
+	ax22.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax22.set_ylabel('Year', fontsize = 20) 
+	ax22.tick_params(labelsize=15)
+	ax22.set_title(label = "Average Attendance per Year", fontsize = 25)
 
 
 	years = np.arange(max(train['Year'].values) - 4, max(train['Year'].values)+1)
 	for year in years:
 		sns.distplot(train.loc[train.index.year == year]['Attendance'],
-							ax = ax[0][3], kde= False, norm_hist= True, bins = bins)
-	ax[0][3].set_title(label = "Attendance per Year", fontsize = 25)
-	ax[0][3].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[0][3].set_ylabel('Percent per person', fontsize = 20) 
-	ax[0][3].tick_params(labelsize=15)
-	ax[0][3].legend(years,loc="upper right", fontsize=20)
+							ax = ax03, kde= False, norm_hist= True, bins = bins)
+	ax03.set_title(label = "Attendance per Year", fontsize = 25)
+	ax03.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax03.set_ylabel('Percent per person', fontsize = 20) 
+	ax03.tick_params(labelsize=15)
+	ax03.legend(years,loc="upper right", fontsize=20)
 
 
 	for j in [0,1]:
 		sns.distplot(train.loc[train['Playoffs?'] == j]['Attendance'],
-							ax = ax[1][0], kde= False, norm_hist= True, bins = bins)
-	ax[1][0].set_title(label = "Attendance for Regular and Playoff Games", fontsize = 25)
-	ax[1][0].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[1][0].set_ylabel('Percent per person', fontsize = 20) 
-	ax[1][0].tick_params(labelsize=15)
-	ax[1][0].legend(['Regular Season', 'Playoffs'],loc="upper right", fontsize=15)
+							ax = ax10, kde= False, norm_hist= True, bins = bins)
+	ax10.set_title(label = "Attendance for Regular and Playoff Games", fontsize = 25)
+	ax10.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax10.set_ylabel('Percent per person', fontsize = 20) 
+	ax10.tick_params(labelsize=15)
+	ax10.legend(['Regular Season', 'Playoffs'],loc="upper right", fontsize=15)
 
 	win_percent = np.arange(0,1,0.10)
 	for i in win_percent:
 		sns.distplot(train.loc[(train['Curr Win %'] >= i) & (train['Curr Win %'] < i+0.1)]['Attendance'],
-                        ax=ax[1][1], kde=False, norm_hist=True, bins = bins)
-	ax[1][1].set_title(label = "Attendance for Different Win Percentages", fontsize = 25)
-	ax[1][1].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[1][1].set_ylabel('Percent per person', fontsize = 20) 
-	ax[1][1].tick_params(labelsize=15)
-	ax[1][1].legend(['0 %', '10 %', '20 %', '30 %', '40 %','50 %','60 %','70 %','80 %','90 %','100 %'], 
+                        ax=ax11, kde=False, norm_hist=True, bins = bins)
+	ax11.set_title(label = "Attendance for Different Win Percentages", fontsize = 25)
+	ax11.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax11.set_ylabel('Percent per person', fontsize = 20) 
+	ax11.tick_params(labelsize=15)
+	ax11.legend(['0 %', '10 %', '20 %', '30 %', '40 %','50 %','60 %','70 %','80 %','90 %','100 %'], 
 	                loc="upper right", fontsize=17)
 
 	last_five = np.arange(0,6)
 	for i in last_five:
 		sns.distplot(train.loc[train['Last Five'] == i]['Attendance'],
-                        ax=ax[1][2], kde=False, norm_hist=True, bins = bins)
-	ax[1][2].set_title(label = "Attendance by Last Five Record", fontsize = 25)
-	ax[1][2].set_xlabel('Attendance (# of people)', fontsize = 20)
-	ax[1][2].set_ylabel('Percent per person', fontsize = 20) 
-	ax[1][2].tick_params(labelsize=15)
-	ax[1][2].legend(['0 Wins', '1 Win', '2 Wins', "3 Wins", "4 Wins", "5 Wins"],loc="upper right", fontsize=20)
+                        ax=ax12, kde=False, norm_hist=True, bins = bins)
+	ax12.set_title(label = "Attendance by Last Five Record", fontsize = 25)
+	ax12.set_xlabel('Attendance (# of people)', fontsize = 20)
+	ax12.set_ylabel('Percent per person', fontsize = 20) 
+	ax12.tick_params(labelsize=15)
+	ax12.legend(['0 Wins', '1 Win', '2 Wins', "3 Wins", "4 Wins", "5 Wins"],loc="upper right", fontsize=20)
 
 	grouped = train[['Last Five','Attendance']].groupby('Last Five').mean()
 	order = np.arange(0,6)
 	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
-	             saturation=1, ax=ax[2][3], palette = sns.color_palette("cubehelix", 5))
-	ax[2][3].set_xlim(16500,18500)
-	ax[2][3].set_xticks(range(16500,18501,500))
-	ax[2][3].set_xlabel('Average Attendance (# of people)', fontsize = 20)
-	ax[2][3].set_ylabel('Record Over Last Five Games', fontsize = 20) 
-	ax[2][3].tick_params(labelsize=15)
-	ax[2][3].set_title(label = "Average Attendance per Last Five Record", fontsize = 25)
+	             saturation=1, ax=ax31, palette = sns.color_palette("cubehelix", 5))
+	ax31.set_xlim(16500,18500)
+	ax31.set_xticks(range(16500,18501,500))
+	ax31.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax31.set_ylabel('Record Over Last Five Games', fontsize = 20) 
+	ax31.tick_params(labelsize=15)
+	ax31.set_title(label = "Average Attendance per Last Five Record", fontsize = 25)
 	
 	num_numerical = ds.get_number_numerical()[name]
 	train_num = train.iloc[:,0:num_numerical]
-	heat = sns.heatmap(train_num.corr(),annot = True, ax = ax[1][3], fmt = '.2f', 
+	heat = sns.heatmap(train_num.corr(),annot = True, ax = ax13, fmt = '.2f', 
 	                   cbar = True, square = True, xticklabels= True, yticklabels = True,
 	                  annot_kws={'size':16}, cmap = 'coolwarm', center= 0, vmin=-1, vmax=1,
 	                  cbar_kws={"shrink": 1})
-	ax[1][3].set_title('Heatmap of Numerical Variable Correlation', size=25) 
-	ax[1][3].set_xticklabels(ax[1][3].xaxis.get_majorticklabels(), rotation=60, size = 15)
-	ax[1][3].set_yticklabels(ax[1][3].yaxis.get_majorticklabels(), rotation=0, size = 15)
-	ax[1][3].collections[0].colorbar.ax.tick_params(labelsize=15)
+	ax13.set_title('Heatmap of Numerical Variable Correlation', size=25) 
+	ax13.set_xticklabels(ax13.xaxis.get_majorticklabels(), rotation=60, size = 15)
+	ax13.set_yticklabels(ax13.yaxis.get_majorticklabels(), rotation=0, size = 15)
+	ax13.collections[0].colorbar.ax.tick_params(labelsize=15)
 
 	# Make annotations larger if abs(correlation) above 0.2
 	num_corrs = len(np.unique(train_num.corr().values.flatten()))
@@ -173,11 +194,43 @@ def create_plots(name, save = False):
 	    if i.size > 0:
 	        text.set_color('white')
 	        text.set_size(27-(i[0]*3))
-	plt.tight_layout()
+
+	train.loc[train['Playoffs?'] == 0, "Playoffs?"] = 'Regular Season'
+	train.loc[train['Playoffs?'] == 1, "Playoffs?"] = 'Playoffs'
+	grouped = train[['Playoffs?','Attendance']].groupby('Playoffs?').mean()
+	order = ['Regular Season', 'Playoffs']
+	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
+	             saturation=1, ax=ax23, palette = sns.color_palette("cubehelix", 5))
+	ax23.set_xlim(16500,19500)
+	ax23.set_xticks(range(16500,19501,500))
+	ax23.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax23.set_ylabel('Game Type', fontsize = 20) 
+	ax23.tick_params(labelsize=15)
+	ax23.set_title(label = "Average Attendance per Game Type", fontsize = 25)
+
+	train[['Curr Win %']] = np.round(train[['Curr Win %']],1) * 100
+	grouped = train[['Curr Win %','Attendance']].groupby('Curr Win %').mean()
+	order = np.arange(0,101,10)
+	sns.barplot(x='Attendance', y=grouped.index, data=grouped, order=order, ci=None, orient='h', 
+	             saturation=1, ax=ax30, palette = sns.color_palette("cubehelix", 5))
+	ax30.set_xlim(16500,19500)
+	ax30.set_xticks(range(16500,19501,500))
+	ax30.set_xlabel('Average Attendance (# of people)', fontsize = 20)
+	ax30.set_ylabel('Current Win %', fontsize = 20) 
+	ax30.tick_params(labelsize=15)
+	ax30.set_title(label = "Average Attendance per Current Win %", fontsize = 25)
+
+	# ax[3][2] = sns.pairplot(data = train_num)
+	# ax[3][2].set_title('Pairplot of Numerical Variable Correlation', size=25) 
+	# ax[3][2].set_xticklabels(ax[3][2].xaxis.get_majorticklabels(), rotation=60, size = 15)
+	# ax[3][2].set_yticklabels(ax[3][2].yaxis.get_majorticklabels(), rotation=0, size = 15)
+
+	gs.tight_layout(fig)
+	# plt.tight_layout()
 	plt.show()
 
 	if save:
-		to_save = Path().resolve().joinpath('data', 'visualizations', 'all_plots_{}.png'.format(name))
+		to_save = Path().resolve().joinpath('visualizations', 'all_plots_{}.png'.format(name))
 		fig.savefig(to_save, dpi=300)
 
 def create_attendance_histogram(name, train, save = False):
@@ -469,7 +522,8 @@ def create_heatmap(name, train, save = False):
 
 	if save:
 		to_save = Path().resolve().joinpath('data', 'visualizations', '{}_heatmap.png'.format(name))
-		fig.savefig(to_save)   
+		fig.savefig(to_save) 
+
 
 
 

@@ -79,13 +79,13 @@ def plots():
 	'''
 
 	display(Markdown('### `Dataset 1:`'))
-	display(Image("data/visualizations/all_plots_dataset_1.png"))
+	display(Image("visualizations/all_plots_dataset_1.png"))
 	display(Markdown('---'))
 	display(Markdown('### `Dataset 2:`'))
-	display(Image("data/visualizations/all_plots_dataset_2.png"))
+	display(Image("visualizations/all_plots_dataset_2.png"))
 	display(Markdown('---'))
 	display(Markdown('### `Dataset 3:`'))
-	display(Image("data/visualizations/all_plots_dataset_3.png"))
+	display(Image("visualizations/all_plots_dataset_3.png"))
 	display(Markdown('---'))
 
 def averages():
