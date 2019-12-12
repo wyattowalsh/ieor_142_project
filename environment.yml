@@ -22,5 +22,4 @@ dependencies:
   - ipywidgets
   - scipy
   - conda
-prefix: /Users/wyattowalsh/miniconda3/envs/ieor_142_project
 
