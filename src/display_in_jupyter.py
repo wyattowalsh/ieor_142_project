@@ -3,14 +3,6 @@ import pandas as pd
 from pathlib import Path
 import src.data.datasets as ds
 import src.data.train_test_split as split
-import src.features.decomposition as decomposition
-import src.features.statistical_tests as st
-import src.initialize_jupyter
-import src.models.ensemble as ensembles
-import src.models.metrics as metrics
-import src.models.neural_networks as nn
-import src.models.other as other_models
-import src.visualization.data_exploration as de
 from IPython.display import display, Image, Markdown
 
 def main_datasets():
@@ -165,29 +157,29 @@ def linear():
 
 	'''
 
-	df = pd.read_csv(Path().resolve().joinpath('models', 'linear', 'outcomes_statistics.csv'), index_col = 0)
+	df = pd.read_csv(Path().resolve().joinpath('models', 'linear', 'performance_outcomes_all.csv'), index_col = 0)
 	r2 = df.loc[df['$R^2$']  == max(df['$R^2$'])].index.values
 	r2 = ", ".join(str(x) for x in r2)
-	evs = df.loc[df['Explained Variance Score'] == \
-	                max(df['Explained Variance Score'])].index.values
-	evs = ", ".join(str(x) for x in evs)
+	# evs = df.loc[df['Explained Variance Score'] == \
+	#                 max(df['Explained Variance Score'])].index.values
+	# evs = ", ".join(str(x) for x in evs)
 	mae = df.loc[df['Mean Absolute Error'] == \
 	                min(df['Mean Absolute Error'])].index.values
 	mae = ", ".join(str(x) for x in mae)
 	rmse = df.loc[df['Root Mean Square Error'] == \
 	                 min(df['Root Mean Square Error'])].index.values
 	rmse = ", ".join(str(x) for x in rmse)
-	mape = df.loc[df['Mean Absolute Percent Error'] == \
-	                 min(df['Mean Absolute Percent Error'])].index.values
-	mape = ", ".join(str(x) for x in mape)
+	# mape = df.loc[df['Mean Absolute Percent Error'] == \
+	#                  min(df['Mean Absolute Percent Error'])].index.values
+	# mape = ", ".join(str(x) for x in mape)
 
 	display(Markdown('### $R^2$: {}: {}'.format(np.round(max(df['$R^2$']), 3), r2)))
-	display(Markdown('### Explained Variance Score: {}: {}'.format(np.round(max(df['Explained Variance Score']), 3), \
-	                                                                 evs)))
+	# display(Markdown('### Explained Variance Score: {}: {}'.format(np.round(max(df['Explained Variance Score']), 3), \
+	#                                                                  evs)))
 	display(Markdown('### Mean Absolute Error: {}: {}'.format(np.round(min(df['Mean Absolute Error']), 3), mae)))
 	display(Markdown('### Root Mean Square Error: {}: {}'.format(np.round(min(df['Root Mean Square Error']),3), rmse)))
-	display(Markdown('### Mean Absolute Percent Error: {}: {}'.format(np.round(min(df['Mean Absolute Percent Error'])),\
-	                                                                    mape)))
+	# display(Markdown('### Mean Absolute Percent Error: {}: {}'.format(np.round(min(df['Mean Absolute Percent Error'])),\
+	#                                                                     mape)))
 	display(Markdown('---'))
 
 

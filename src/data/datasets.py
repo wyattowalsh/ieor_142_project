@@ -4,7 +4,7 @@ import warnings
 from pathlib import Path
 
 def get_removed_features():
-	'''
+	'''Creates and returns dictionary of features removed in data subsets
 
 	'''
 	file_names = ['dataset_1_1', 'dataset_1_3',
@@ -25,7 +25,7 @@ def get_removed_features():
 	return rf_dict
 
 def get_names():
-	'''
+	'''Creates and returns dictionary of display names for the different datasets' file names
 
 	'''
 
@@ -42,7 +42,7 @@ def get_names():
 	return name_dict
 
 def load_dataset(name): 
-	'''
+	'''returns dataframe from a local csv in the data/processed directory
 
 	'''
 
@@ -57,7 +57,8 @@ def load_dataset(name):
 def load_datasets(names = ['dataset_1','dataset_1_1', 'dataset_1_3',
 				  "dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
 				  "dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]):
-	'''
+	'''returns dictionary where keys are the file names associated with the different datasets 
+	and values are the associated dataframes 
 
 	'''
 
@@ -70,7 +71,7 @@ def load_datasets(names = ['dataset_1','dataset_1_1', 'dataset_1_3',
 	return datasets
 
 def save_dataset(name, data):
-	"""
+	"""saves a processed dataset as csv in the data/processed directory
 
 	"""
 
@@ -79,6 +80,10 @@ def save_dataset(name, data):
 	data.to_csv(to_save)
 
 def create_datasets():
+	'''Creates datasets and subsets based off of raw data and saves them as .csv files in the data/processed directory
+
+	'''
+
 	dataset()
 	dataset_1()
 	dataset_1_1()
@@ -93,7 +98,7 @@ def create_datasets():
 	dataset_3_3()
 
 def get_number_numerical():
-	'''
+	'''Returns a dictionary of the number of numerical features each dataset has
 
 	'''
 
@@ -113,7 +118,7 @@ def get_number_numerical():
 
 
 def dataset():
-	"""This dataset contains games from all the years scraped.
+	"""This is the master dataset containing games from all the years scraped.
 
 	It does not include popularity or capacity data.
 	It does include the lagged attendance feature and last attendance versus the same opponent
@@ -149,8 +154,10 @@ def dataset():
 
 
 def dataset_1():
-	'''
-
+	'''This is the first cleaned dataset.
+	
+	It is from 1999 to 12/2019, does not contain popularity data or rivalry data,
+	but does contain all other features found in the master dataset
 	'''
 
 	data = load_dataset('dataset')
@@ -160,8 +167,9 @@ def dataset_1():
 	return
 
 def dataset_1_1():
-	'''
-
+	'''This is a subset of dataset_1 based off of VIF analysis
+	
+	Features dropped are: LS Win %, Last Attendance vs Opp, and Last Game
 	'''
 
 	data = load_dataset('dataset_1')
@@ -169,8 +177,9 @@ def dataset_1_1():
 	save_dataset('dataset_1_1', data)
 
 def dataset_1_3():
-	'''
-
+	'''This is a subset of dataset_1 based off of estimated mutual information analysis
+	
+	Features dropped are: Curr Win % and Last Attendance vs Opp
 	'''
 
 	data = load_dataset('dataset_1')
@@ -179,8 +188,11 @@ def dataset_1_3():
 
 
 def dataset_2():
-	'''
-
+	'''This is the second cleaned dataset
+	
+	It is from 1999 to 12/2019
+	Removes games played in old stadiums from the master dataset
+	Does not include popularity or rival data
 	''' 
 
 	data = load_dataset('dataset')
@@ -199,8 +211,9 @@ def dataset_2():
 	return 
 
 def dataset_2_1():
-	'''
+	'''This is a subset of dataset_2 based off of VIF analysis 
 
+	Features dropped are: LS Win %, Last Game, and Last Attendance vs Opp
 	'''
 
 	data = load_dataset('dataset_2')
@@ -208,8 +221,9 @@ def dataset_2_1():
 	save_dataset('dataset_2_1', data)
 
 def dataset_2_2():
-	'''
-
+	'''This is a subset of dataset_2 based off of F-test analysis
+	
+	Features dropped are: Capacity
 	'''
 
 	data = load_dataset('dataset_2')
@@ -217,8 +231,9 @@ def dataset_2_2():
 	save_dataset('dataset_2_2', data)
 
 def dataset_2_3():
-	'''
-
+	'''This is a subset of dataset_2 based off of estimated mutual information analysis
+	
+	Features dropped are: Curr Win % and Last Attendance vs Opp
 	'''
 
 	data = load_dataset('dataset_2')
@@ -226,6 +241,12 @@ def dataset_2_3():
 	save_dataset('dataset_2_3', data)
 
 def dataset_3():
+	'''This is the third cleaned dataset
+	
+	It is from 1/2004 to 12/2019
+	It removes games that were played in old stadiums
+	It does not include rivalry data
+	'''
 
 	data = load_dataset('dataset')
 	stadiums = pd.read_csv(Path().resolve().joinpath('data', 'raw', 'stadiums_data.csv'), index_col = 0)
@@ -242,16 +263,31 @@ def dataset_3():
 	save_dataset('dataset_3', data)
 
 def dataset_3_1():
+	'''This is a subset of dataset_3 based off of VIF analysis 
+
+	Features dropped are: Capacity, Curr Win %, LS Win %, and Last Game
+	'''
+
 	data = load_dataset('dataset_3')
 	data = data.drop(['Capacity', 'Curr Win %', 'LS Win %', 'Last Game'], axis = 1)
 	save_dataset("dataset_3_1", data)
 
 def dataset_3_2():
+	'''This is a subset of dataset_3 based off of F-test analysis
+	
+	Features dropped are: Last Attendance vs Opp and V Pop
+	'''
+
 	data = load_dataset('dataset_3')
 	data = data.drop(['Last Attendance vs Opp', 'V Pop'], axis = 1)
 	save_dataset("dataset_3_2", data)
 
 def dataset_3_3():
+	'''This is a subset of dataset_3 based off of estimated mutual information analysis
+	
+	Features dropped are: Curr Win %, V Pop, H Pop, and Last Attendance vs Opp
+	'''
+
 	data = load_dataset('dataset_3')
 	data = data.drop(['Curr Win %', 'V Pop', 'H Pop', 'Last Attendance vs Opp'], axis = 1)
 	save_dataset("dataset_3_3", data)
