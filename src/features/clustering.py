@@ -132,6 +132,8 @@ def create_cluster_plots(name, save = False):
 		annot.set_fontsize(25)
 
 	clusters = 7
+	if name == 'dataset_3':
+		clusters = 9
 	ax[1].set_xlim([-0.3, 0.8])
 	ax[1].set_ylim([0, len(X_train_s_numerical) + (clusters + 1) * 10])
 

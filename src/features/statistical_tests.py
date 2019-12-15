@@ -10,10 +10,7 @@ def collect_tests(name, save = False):
 	'''Aggregates statistical test data for a dataset into a single DataFrame for notebook presentation.
 
 	'''
-	sets = split.split_subsets(name)
-	name = name[0]
-	X_train = sets[name][0]
-	y_train = sets[name][2]
+	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	vif = find_vifs(name, X_train).sort_index(0)
 	sig = find_numerical_significance(name, X_train, y_train).sort_index(0)
 	df = pd.concat([vif, sig], axis = 1)
@@ -30,8 +27,8 @@ def find_vifs(name, X_train, tolerance = 5):
 	'''
 
 	X_train = X_train.copy()
-	number_numerical = ds.get_number_numerical()
-	train_num = X_train.iloc[:,0:number_numerical[name]]
+	number_numerical = ds.get_number_numerical()[name]
+	train_num = X_train.iloc[:,0:number_numerical]
 	vif = pd.DataFrame(index = train_num.columns)
 	vif_x = train_num.copy()
 	cols = vif_x.columns.values

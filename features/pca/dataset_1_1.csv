@@ -1,2 +1,2 @@
-,$R^2$,Explained Variance Score,Mean Absolute Error,Root Mean Square Error,Mean Absolute Percent Error
-Dataset 1 Subset 1: 1 dimensions,0.35954924962093415,0.4043496293191121,1261.2989520958083,1588.7648295712727,7.224611425282758
+,$R^2$,Mean Absolute Error,Root Mean Square Error
+Dataset 1 Subset 1: 1 dimensions,0.31316488314349933,1309.057643581081,1649.4922240582628

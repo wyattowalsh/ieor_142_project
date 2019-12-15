@@ -146,10 +146,10 @@ def clustering():
 	display(Image("visualizations/clustering/dataset_1.png"))
 	display(Markdown('---'))
 	display(Markdown('### `Dataset 2:`'))
-	display(Image("visualizations/clustering/dataset_1.png"))
+	display(Image("visualizations/clustering/dataset_2.png"))
 	display(Markdown('---'))
 	display(Markdown('### `Dataset 3:`'))
-	display(Image("visualizations/clustering/dataset_1.png"))
+	display(Image("visualizations/clustering/dataset_3.png"))
 	display(Markdown('---'))
 
 def linear():

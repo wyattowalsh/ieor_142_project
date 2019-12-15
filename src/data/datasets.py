@@ -8,13 +8,12 @@ def get_removed_features():
 
 	'''
 	file_names = ['dataset_1_1', 'dataset_1_3',
-	'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+	'dataset_2_1', 'dataset_2_3',
 	"dataset_3_1", "dataset_3_2", "dataset_3_3"]
 
-	removed_features = ['LS Win %, Last Game, Last Attendance vs Opp',
+	removed_features = ['LS Win %, Capacity, Last Game',
 	'Curr Win %, Last Attendance vs Opp',
-	'LS Win %, Last Game, Last Attendance vs Opp',
-	'Capacity',
+	'LS Win %, Last Game, Capacity',
 	'Curr Win %, Last Attendance vs Opp',
 	'Curr Win %, LS Win %, Last Game, Capacity',
 	'V Pop, Last Attendance vs Opp',
@@ -30,11 +29,11 @@ def get_names():
 	'''
 
 	file_names = ['dataset_1','dataset_1_1', 'dataset_1_3',
-	"dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+	"dataset_2", 'dataset_2_1', 'dataset_2_3',
 	"dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]
 
 	names = ['Dataset 1', "Dataset 1 Subset 1", "Dataset 1 Subset 2",
-	'Dataset 2', "Dataset 2 Subset 1", "Dataset 2 Subset 2", "Dataset 2 Subset 3",
+	'Dataset 2', "Dataset 2 Subset 1", "Dataset 2 Subset 2",
 	"Dataset 3", "Dataset 3 Subset 1", "Dataset 3 Subset 2", "Dataset 3 Subset 3"]
 
 	name_dict = dict(zip(file_names, names))
@@ -55,7 +54,7 @@ def load_dataset(name):
 		warnings.warn('{} does not exist'.format(name))
 
 def load_datasets(names = ['dataset_1','dataset_1_1', 'dataset_1_3',
-				  "dataset_2", 'dataset_2_1', 'dataset_2_2', 'dataset_2_3',
+				  "dataset_2", 'dataset_2_1', 'dataset_2_3',
 				  "dataset_3", "dataset_3_1", "dataset_3_2", "dataset_3_3"]):
 	'''returns dictionary where keys are the file names associated with the different datasets 
 	and values are the associated dataframes 
@@ -90,7 +89,6 @@ def create_datasets():
 	dataset_1_3()
 	dataset_2()
 	dataset_2_1()
-	dataset_2_2()
 	dataset_2_3()
 	dataset_3()
 	dataset_3_1()
@@ -107,7 +105,6 @@ def get_number_numerical():
 	'dataset_1_3': 3,
 	'dataset_2': 5,
 	'dataset_2_1': 2,
-	'dataset_2_2': 4,
 	'dataset_2_3': 3,
 	'dataset_3': 7,
 	'dataset_3_1': 3,
@@ -149,6 +146,7 @@ def dataset():
 	data = data[['V Pop', 'H Pop', 'Curr Win %',  'LS Win %','Last Game', 'Last Attendance vs Opp', 
 	'Capacity', "Home", "Visitor",'Playoffs?', 'Last Five', 'Day of Week','Month', 'Rivalry?', 'Attendance']]
 	data = data.dropna()
+	data = data.loc[data.index < pd.to_datetime('2019-12')]
 	save_dataset('dataset', data)
 	return
 
@@ -169,11 +167,11 @@ def dataset_1():
 def dataset_1_1():
 	'''This is a subset of dataset_1 based off of VIF analysis
 	
-	Features dropped are: LS Win %, Last Attendance vs Opp, and Last Game
+
 	'''
 
 	data = load_dataset('dataset_1')
-	data = data.drop(['LS Win %', 'Last Attendance vs Opp', 'Last Game'], axis = 1)
+	data = data.drop(['LS Win %', 'Capacity', 'Last Game'], axis = 1)
 	save_dataset('dataset_1_1', data)
 
 def dataset_1_3():
@@ -217,18 +215,9 @@ def dataset_2_1():
 	'''
 
 	data = load_dataset('dataset_2')
-	data = data.drop(['LS Win %', 'Last Game', 'Last Attendance vs Opp'], axis = 1)
+	data = data.drop(['LS Win %', 'Last Game', 'Capacity'], axis = 1)
 	save_dataset('dataset_2_1', data)
 
-def dataset_2_2():
-	'''This is a subset of dataset_2 based off of F-test analysis
-	
-	Features dropped are: Capacity
-	'''
-
-	data = load_dataset('dataset_2')
-	data = data.drop(['Capacity'], axis = 1)
-	save_dataset('dataset_2_2', data)
 
 def dataset_2_3():
 	'''This is a subset of dataset_2 based off of estimated mutual information analysis
@@ -291,5 +280,3 @@ def dataset_3_3():
 	data = load_dataset('dataset_3')
 	data = data.drop(['Curr Win %', 'V Pop', 'H Pop', 'Last Attendance vs Opp'], axis = 1)
 	save_dataset("dataset_3_3", data)
-
-
