@@ -229,7 +229,7 @@ def adaboost_grid_cv(name, cv = 5, save = True):
 	param_grid = {'base_estimator': [DecisionTreeRegressor(max_depth=5)],
 	'n_estimators': [250],
 	'loss': ['linear', 'exponential'],
-	'learning_rate':  np.append(np.array([0]), np.geomspace(1e-6,0.2, 10))} 
+	'learning_rate':  np.geomspace(1e-6,0.2, 20)} 
 
 	adaboost = AdaBoostRegressor()
 	adaboost_cv = GridSearchCV(estimator=adaboost, param_grid=param_grid, scoring = to_score, 
