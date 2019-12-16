@@ -29,7 +29,7 @@ def get_results(model_name, save = False):
 	'''
 
 	'''
-	names = ['dataset_1', 'dataset_2', 'dataset_3']
+	names = ['dataset_3']
 	models = [k_neighbors_grid_cv, svr_grid_cv]
 	model_names = ['k_neighbors', 'svr']
 	model_dict = dict(zip(model_names, models)) 
