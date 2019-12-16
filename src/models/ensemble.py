@@ -303,25 +303,25 @@ def gradient_boosting_randomized_cv(name, n_iter = 50, cv =5):
 	                                          scoring = to_score).fit(X_train, y_train)
 	return gradient_boosting_cv
 
-def gradient_boosting_grid_cv(name, cv = 5):
+def gradient_boosting_grid_cv(name, cv = 5, save = True):
 	"""Conducts a grid search over all possible combinations of given parameters and returns the result
 
 	Uses parameters closely clustered around the best randomized search results.
 	Also returns back best fitted model by specified criteria (MAE).
 	"""
 
-	if cv == 5:
-		cv_type = 'K-Fold'
-	else:
-		cv_type = "Time Series Split"
-
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	to_score = metrics.create_metrics()[0]
 
 	param_grid = {'loss' : ['ls', 'lad', 'huber'] ,
-	'learning_rate': np.arange(0.1,1.01, 0.1),
-	'n_estimators': np.linspace(20, 2000, 10, dtype=int),
-	'learning_rate': np.linspace(0.01, 1, 10)} 
+	'learning_rate': np.geomspace(1e-6, 0.1, 5),
+	'n_estimators': [900],
+	'min_samples_split': [4, 64, 128, 256],
+	'min_samples_leaf': [8, 128],
+	'max_depth': [4,5,15],
+	'alpha': np.linspace(0.1, 1, 5),
+	'max_features': [3,40,60]}
+
 
 	gradient_boosting = GradientBoostingRegressor(random_state = 18)
 	gradient_boosting_cv = GridSearchCV(n_jobs = -1, estimator= gradient_boosting, param_grid = param_grid,
@@ -333,8 +333,15 @@ def gradient_boosting_grid_cv(name, cv = 5):
 	variations = linear.get_model_variants(GradientBoostingRegressor, gradient_boosting_cv)
 	for variation in variations:
 		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} {} Gradient Boosting'.format(display_name, cv_type),
+		performance = pd.concat([performance, metrics.apply_metrics('{} Gradient Boosting'.format(display_name),
 	 y_test, model)], axis = 0)
+
+	if save:
+		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
+		'ensemble', 'gradient_boosting','{}.csv'.format('grid'))
+		results = pd.DataFrame.from_dict(gradient_boosting_cv.cv_results_)
+		results.to_csv(to_save)
+
 
 	return gradient_boosting_cv, performance 
 
@@ -376,7 +383,7 @@ def extra_trees_randomized_cv(name, n_iter = 30, cv = 5):
 	to_score = metrics.create_metrics()[0]
 	extra_trees = ExtraTreesRegressor(random_state = 18, n_jobs = -1, max_features= None, bootstrap = False)
 
-	random_grid = {'n_estimators': np.linspace(start=100, stop= 500, num=20, dtype=int),
+	random_grid = {'n_estimators': [np.linspace(start=100, stop= 500, num=20, dtype=int)],
 	'max_depth' : [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
 	'bootstrap': [True, False],
 	'max_features': np.linspace(2, len(X_train.columns), num = 20, dtype = int),
@@ -391,22 +398,21 @@ def extra_trees_randomized_cv(name, n_iter = 30, cv = 5):
 
 	return extra_trees_cv
 
-def extra_trees_grid_cv(name, cv = 5):
+def extra_trees_grid_cv(name, cv = 5, save = True):
 	"""
 
 	"""
-
-	if cv == 5:
-		cv_type = 'K-Fold'
-	else:
-		cv_type = "Time Series Split"
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	to_score = metrics.create_metrics()[0]
 	extra_trees = ExtraTreesRegressor(n_jobs = -1, random_state = 18, max_features= None, bootstrap = False)
-	param_grid = {'n_estimators': np.linspace(start=200, stop=2000, num=10, dtype=int),
-				   'max_features': np.arange(1, len(X_train.columns.values)+1),
-				   'min_samples_split': [2, 5, 10]}
+
+	param_grid = {'n_estimators': [250],
+	'max_depth' : [20,35],
+	'bootstrap': [True, False],
+	'max_features': [30, 45, 80],
+	'min_samples_split': [2,8,16],
+	'min_samples_leaf': [1, 2]}
 
 	extra_trees_cv = GridSearchCV(n_jobs = -1, estimator= extra_trees, param_grid = param_grid, pre_dispatch = 16,
 	 cv= cv, refit = False, scoring = to_score).fit(X_train, y_train)
@@ -416,8 +422,16 @@ def extra_trees_grid_cv(name, cv = 5):
 	variations = linear.get_model_variants(ExtraTreesRegressor, extra_trees_cv)
 	for variation in variations:
 		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} Extra Trees'.format(display_name, cv_type),
+		performance = pd.concat([performance, metrics.apply_metrics('{} Extra Trees'.format(display_name),
 	 y_test, model)], axis = 0)
+
+	if save:
+		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
+		'ensemble', 'extra_trees','{}.csv'.format('grid'))
+		results = pd.DataFrame.from_dict(extra_trees_cv.cv_results_)
+		results.to_csv(to_save)
+
+
 
 	return extra_trees_cv, performance
 
