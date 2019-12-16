@@ -96,27 +96,20 @@ def k_neighbors_randomized_cv(name, n_iter = 50, cv = 5):
 	return model_cv
 
 
-def k_neighbors_grid_cv(name, cv = 5):
+def k_neighbors_grid_cv(name, cv = 5, save = True):
 	'''Conducts a grid search over all possible combinations of given parameters and returns result.
 
 	Uses parameters closely clustered around the best randomized search results.
 	Also returns back best fitted model by specified criteria (MAE).
 	'''
 
-	if cv == 5:
-		cv_type = 'K-Fold'
-	else:
-		cv_type = "Time Series Split"
-
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	X_train = split.standardize(name, X_train)
 	X_test = split.standardize(name, X_test)
 	to_score = metrics.create_metrics()[0]
-	param_grid = {'n_estimators': np.arange(400,1851,50),
-				   'max_features': [13,14],
-				   'min_samples_split': [2, 4],
-				   'min_samples_leaf': [1],
-				   'bootstrap' : [False]}
+	param_grid = {'n_neighbors': np.arange(20,51,2, dtype = int),
+	'weights': ['distance'],
+	'leaf_size': [8,16, 128, 256]} 
 				   
 	model = KNeighborsRegressor(n_jobs = -1)
 	model_cv = GridSearchCV(n_jobs = -1, estimator=model, param_grid=param_grid, scoring = to_score, pre_dispatch = 16,
@@ -127,8 +120,15 @@ def k_neighbors_grid_cv(name, cv = 5):
 	variations = linear.get_model_variants(KNeighborsRegressor, model_cv)
 	for variation in variations:
 		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} {} K Neighbors'.format(display_name, cv_type),
+		performance = pd.concat([performance, metrics.apply_metrics('{} K Neighbors'.format(display_name),
 	 y_test, model)], axis = 0)
+
+	if save:
+		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
+		'other', 'k_neighbors','{}.csv'.format('grid'))
+		results = pd.DataFrame.from_dict(model_cv.cv_results_)
+		results.to_csv(to_save)
+
 
 	return model_cv, performance
 
