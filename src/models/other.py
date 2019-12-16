@@ -104,8 +104,7 @@ def k_neighbors_grid_cv(name, cv = 5, save = True):
 	'''
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	X_train = split.standardize(name, X_train)
-	X_test = split.standardize(name, X_test)
+	X_train, X_test = split.standardize(name, X_train, X_test)
 	to_score = metrics.create_metrics()[0]
 	param_grid = {'n_neighbors': np.arange(20,51,2, dtype = int),
 	'weights': ['distance'],
