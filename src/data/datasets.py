@@ -94,6 +94,7 @@ def create_datasets():
 	dataset_3_1()
 	dataset_3_2()
 	dataset_3_3()
+	dataset_4()
 
 def get_number_numerical():
 	'''Returns a dictionary of the number of numerical features each dataset has
@@ -280,3 +281,14 @@ def dataset_3_3():
 	data = load_dataset('dataset_3')
 	data = data.drop(['Curr Win %', 'V Pop', 'H Pop', 'Last Attendance vs Opp'], axis = 1)
 	save_dataset("dataset_3_3", data)
+
+def dataset_4():
+	'''
+
+	'''
+
+	data = load_dataset('dataset')
+	data = data.drop(['Rivalry?'], axis = 1)
+	data = data.dropna()
+	data = data.loc[data.index.year >= 2004]    
+	save_dataset('dataset_4', data)

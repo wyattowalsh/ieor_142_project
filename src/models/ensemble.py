@@ -30,8 +30,8 @@ def get_results(model_name, save = False):
 
 	'''
 
-	names = ['dataset_3']
-	models = [random_forest_grid_cv, adaboost_grid_cv, gradient_boosting_grid_cv, extra_trees_grid_cv]
+	names = ['dataset_1', 'dataset_2','dataset_3']
+	models = [random_forest_grid_cv, adaboost_grid_cv, gradient_boosting_randomized_cv, extra_trees_grid_cv]
 	model_names = ['random_forest', 'adaboost', 'gradient_boosting', 'extra_trees']
 	model_dict = dict(zip(model_names, models))	
 	model = model_dict[model_name]
@@ -116,12 +116,9 @@ def random_forest_randomized_cv(name, n_iter = 30, cv = 5):
 	'min_samples_split': [2, 4, 8, 16, 32, 64, 128],
 	'min_samples_leaf': [1, 2, 4, 8, 16, 32, 64]}
 
-
-
-	to_score = metrics.create_metrics()[0]
 	rf = RandomForestRegressor()
 	rf_cv = RandomizedSearchCV(estimator=rf, param_distributions= random_grid_0, n_jobs = -1, n_iter= n_iter, cv=cv,
-	pre_dispatch = 16, scoring= to_score, random_state = 18, refit = False).fit(X_train, y_train)
+	pre_dispatch = 16, scoring= 'neg_mean_absolute_error', random_state = 18, refit = True).fit(X_train, y_train)
 
 	return rf_cv
 
@@ -134,7 +131,6 @@ def random_forest_grid_cv(name, cv = 5, save = True):
 
 	display_name = ds.get_names()[name]
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	to_score = metrics.create_metrics()[0]
 
 	param_grid = {'n_estimators': [400],
 	'max_depth' : [30, 50, 90],
@@ -144,16 +140,12 @@ def random_forest_grid_cv(name, cv = 5, save = True):
 	'min_samples_leaf': [1, 2, 8]}
 				   
 	rf = RandomForestRegressor()
-	rf_cv = GridSearchCV(n_jobs = -1, estimator=rf, param_grid=param_grid, scoring = to_score, pre_dispatch = 16,
-						 refit = False, cv = cv).fit(X_train, y_train)
+	rf_cv = GridSearchCV(n_jobs = -1, estimator=rf, param_grid=param_grid, scoring = 'neg_mean_absolute_error',
+	pre_dispatch = 16, refit = True, cv = cv).fit(X_train, y_train)
 
-	performance = pd.DataFrame()
-	variations = linear.get_model_variants(RandomForestRegressor, rf_cv)
-	for variation in variations:
-		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} Random Forest'.format(display_name),
-	 y_test, model)], axis = 0)
-
+	performance = metrics.apply_metrics('{} Random Forest'.format(display_name),
+	 y_test, rf_cv.predict(X_test), y_train)
+	performance['Tuning Parameters'] = [rf_cv.best_params_]
 
 	if save:
 		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
@@ -212,7 +204,7 @@ def adaboost_randomized_cv(name, n_iter = 30, cv = 5):
 	adaboost_cv = RandomizedSearchCV(estimator=adaboost, param_distributions = param_grid, 
 	                                 n_iter = n_iter, n_jobs=-1, pre_dispatch = 16, cv=cv, 
 	                                 refit=False, random_state = 18,
-									 scoring = to_score).fit(X_train, y_train)
+									 scoring = 'neg_mean_absolute_error').fit(X_train, y_train)
 
 
 	return adaboost_cv
@@ -224,7 +216,6 @@ def adaboost_grid_cv(name, cv = 5, save = True):
 	'''
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	to_score = metrics.create_metrics()[0]
 
 	param_grid = {'base_estimator': [DecisionTreeRegressor(max_depth=5)],
 	'n_estimators': [250],
@@ -232,16 +223,13 @@ def adaboost_grid_cv(name, cv = 5, save = True):
 	'learning_rate':  np.geomspace(1e-6,0.2, 20)} 
 
 	adaboost = AdaBoostRegressor()
-	adaboost_cv = GridSearchCV(estimator=adaboost, param_grid=param_grid, scoring = to_score, 
-						 refit = False, cv = cv, n_jobs=-1, pre_dispatch = 16).fit(X_train, y_train)
+	adaboost_cv = GridSearchCV(estimator=adaboost, param_grid=param_grid, scoring = 'neg_mean_absolute_error', 
+						 refit = True, cv = cv, n_jobs=-1, pre_dispatch = 16).fit(X_train, y_train)
 
 	display_name = ds.get_names()[name]
-	performance = pd.DataFrame()
-	variations = linear.get_model_variants(AdaBoostRegressor, adaboost_cv)
-	for variation in variations:
-		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} AdaBoost'.format(display_name),
-	 y_test, model)], axis = 0)
+	performance = metrics.apply_metrics('{} AdaBoost'.format(display_name), y_test,
+	adaboost_cv.predict(X_test), y_train)
+	performance['Tuning Parameters'] = [adaboost_cv.best_params_]
 
 	if save:
 		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
@@ -280,16 +268,15 @@ def get_gb_randomized_results(tss = False):
 
 		return results_df
 
-def gradient_boosting_randomized_cv(name, n_iter = 50, cv =5):
+def gradient_boosting_randomized_cv(name, n_iter = 50, cv =5, save = True):
 	"""Conducts a randomized search of cross validation for given parameters of Gradient Boosting and returns results.
 
 	"""	
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	to_score = metrics.create_metrics()[0]
 	param_grid = {'loss' : ['ls', 'lad', 'huber'] ,
 	'learning_rate': np.append(np.array([0]), np.geomspace(1e-6,1, 50)),
-	'n_estimators': np.linspace(100, 1000, 50, dtype=int),
+	'n_estimators': np.linspace(500, 1000, 50, dtype=int),
 	'min_samples_split': [2, 4, 8, 16, 32, 64, 128, 256],
 	'min_samples_leaf': [1, 2, 4, 8, 16, 32, 64, 128],
 	'max_depth': [2,3,4,5,10, 15],
@@ -299,9 +286,22 @@ def gradient_boosting_randomized_cv(name, n_iter = 50, cv =5):
 	gradient_boosting = GradientBoostingRegressor()
 	gradient_boosting_cv = RandomizedSearchCV(estimator= gradient_boosting, n_jobs = -1, pre_dispatch = 16,
 	                                          param_distributions = param_grid, n_iter = n_iter, cv=cv, 
-	                                          refit=False,
-	                                          scoring = to_score).fit(X_train, y_train)
-	return gradient_boosting_cv
+	                                          refit=True,
+	                                          scoring = 'neg_mean_absolute_error').fit(X_train, y_train)
+
+	display_name = ds.get_names()[name]
+	performance = metrics.apply_metrics('{} Gradient Boosting'.format(display_name),
+	 y_test, gradient_boosting_cv.predict(X_test) , y_train)
+	performance['Tuning Parameters'] = [gradient_boosting_cv.best_params_]
+
+
+	if save:
+		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
+		'ensemble', 'gradient_boosting','{}.csv'.format('randomized'))
+		results = pd.DataFrame.from_dict(gradient_boosting_cv.cv_results_)
+		results.to_csv(to_save)
+
+	return gradient_boosting_cv, performance
 
 def gradient_boosting_grid_cv(name, cv = 5, save = True):
 	"""Conducts a grid search over all possible combinations of given parameters and returns the result
@@ -311,7 +311,6 @@ def gradient_boosting_grid_cv(name, cv = 5, save = True):
 	"""
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	to_score = metrics.create_metrics()[0]
 
 	param_grid = {'loss' : ['ls', 'lad', 'huber'] ,
 	'learning_rate': np.geomspace(1e-6, 0.1, 5),
@@ -325,16 +324,13 @@ def gradient_boosting_grid_cv(name, cv = 5, save = True):
 
 	gradient_boosting = GradientBoostingRegressor(random_state = 18)
 	gradient_boosting_cv = GridSearchCV(n_jobs = -1, estimator= gradient_boosting, param_grid = param_grid,
-										 cv= cv, refit = False, scoring = to_score, 
+										 cv= cv, refit = True, scoring = 'neg_mean_absolute_error', 
 										 pre_dispatch = 16).fit(X_train, y_train)
 
 	display_name = ds.get_names()[name]
-	performance = pd.DataFrame()
-	variations = linear.get_model_variants(GradientBoostingRegressor, gradient_boosting_cv)
-	for variation in variations:
-		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} Gradient Boosting'.format(display_name),
-	 y_test, model)], axis = 0)
+	performance = metrics.apply_metrics('{} Gradient Boosting'.format(display_name),
+	 y_test, gradient_boosting_cv.predict(X_test) , y_train)
+	performance['Tuning Parameters'] = [gradient_boosting_cv.best_params_]
 
 	if save:
 		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',
@@ -394,7 +390,7 @@ def extra_trees_randomized_cv(name, n_iter = 30, cv = 5):
 	extra_trees_cv = RandomizedSearchCV(estimator=extra_trees, param_distributions=random_grid,
 										n_iter=n_iter, cv=cv, n_jobs=-1, pre_dispatch = 16, 
 										refit=False, 
-										scoring = to_score).fit(X_train, y_train)
+										scoring ='neg_mean_absolute_error').fit(X_train, y_train)
 
 	return extra_trees_cv
 
@@ -404,7 +400,6 @@ def extra_trees_grid_cv(name, cv = 5, save = True):
 	"""
 
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	to_score = metrics.create_metrics()[0]
 	extra_trees = ExtraTreesRegressor(n_jobs = -1, random_state = 18, max_features= None, bootstrap = False)
 
 	param_grid = {'n_estimators': [250],
@@ -415,15 +410,12 @@ def extra_trees_grid_cv(name, cv = 5, save = True):
 	'min_samples_leaf': [1, 2]}
 
 	extra_trees_cv = GridSearchCV(n_jobs = -1, estimator= extra_trees, param_grid = param_grid, pre_dispatch = 16,
-	 cv= cv, refit = False, scoring = to_score).fit(X_train, y_train)
+	 cv= cv, refit = True, scoring = 'neg_mean_absolute_error').fit(X_train, y_train)
 
 	display_name = ds.get_names()[name]
-	performance = pd.DataFrame()
-	variations = linear.get_model_variants(ExtraTreesRegressor, extra_trees_cv)
-	for variation in variations:
-		model = variation.fit(X_train, y_train).predict(X_test)
-		performance = pd.concat([performance, metrics.apply_metrics('{} Extra Trees'.format(display_name),
-	 y_test, model)], axis = 0)
+	performance = metrics.apply_metrics('{} Extra Trees'.format(display_name),
+	 y_test, extra_trees_cv.predict(X_test), y_train)
+	performance['Tuning Parameters'] = [extra_trees_cv.best_params_]
 
 	if save:
 		to_save = Path().resolve().joinpath('models', 'cross_validation_outcomes',

@@ -40,8 +40,7 @@ def pca_cv(name, save = False):
 	display_name = ds.get_names()[name]
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	num_numerical = ds.get_number_numerical()[name]
-	X_train_s = split.standardize(name, X_train)
-	X_test_s = split.standardize(name, X_test)
+	X_train_s, X_test_s = split.standardize(name, X_train, X_test)
 	X_train_s_numerical = X_train_s.iloc[:,0:num_numerical]
 	X_train_s_categorical = X_train_s.iloc[:,num_numerical:]
 	X_test_s_numerical = X_test_s.iloc[:,0:num_numerical]
@@ -60,7 +59,7 @@ def pca_cv(name, save = False):
 
 		model = ols.fit(X_train_s, y_train)
 		preds = model.predict(X_test_s)
-		preds = metrics.apply_metrics('{}: {} dimensions'.format(display_name, i), y_test, preds.ravel())
+		preds = metrics.apply_metrics('{}: {} dimensions'.format(display_name, i), y_test, preds.ravel(),y_train)
 		df = pd.concat([df, preds], axis = 0)
 		ev.append(1-sum(pca.explained_variance_))
 

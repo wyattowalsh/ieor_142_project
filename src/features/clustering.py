@@ -8,15 +8,16 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_samples, silhouette_score
 
 
-def kmeans(name, n_clusters, X_train):
+def kmeans(name, n_clusters, X_train, X_test):
 	'''
 
 	'''
 
 	X_train = X_train.copy()
+	X_test = X_test.copy()
 	num_numerical = ds.get_number_numerical()[name]
-	X_train_s_numerical = split.standardize(name, X_train).iloc[:,0:num_numerical]
-	return KMeans(n_clusters= n_clusters, random_state=18, n_jobs = 1).fit(X_train_s_numerical)
+	X_train_s_numerical = split.standardize(name, X_train, X_test)[0].iloc[:,0:num_numerical]
+	return KMeans(n_clusters= n_clusters, random_state=18, n_jobs = -1).fit(X_train_s_numerical)
 
 
 def elbow_method_kmeans(name, max_clusters = 30, min_clusters = 2, save = False):
@@ -26,13 +27,13 @@ def elbow_method_kmeans(name, max_clusters = 30, min_clusters = 2, save = False)
 	'''
 
 	display_name = ds.get_names()[name]
-	X_train = split.split_subset(name)[0]
+	X_train, X_test= split.split_subset(name)[0:1]
 	num_numerical = ds.get_number_numerical()[name]
-	X_train_s_numerical = split.standardize(name, X_train).iloc[:,0:num_numerical]
+	X_train_numerical = X_train.iloc[:,0:num_numerical]
 	distortions = []
 	cluster_range = range(min_clusters,max_clusters)
 	for clusters in cluster_range:
-		kmean = kmeans(name, clusters, X_train_s_numerical)
+		kmean = kmeans(name, clusters, X_train_numerical)
 		distortions.append(kmean.inertia_)
 
 	fig, ax = plt.subplots(figsize=(10, 10))
@@ -112,13 +113,14 @@ def create_cluster_plots(name, save = False):
 
 	'''
 
-	X_train = split.split_subset(name)[0]
+	X_train,X_test = split.split_subset(name)[0:2]
 	num_numerical = ds.get_number_numerical()[name]
-	X_train_s_numerical = split.standardize(name, X_train).iloc[:,0:num_numerical]
+	X_train_numerical = X_train.iloc[:,0:num_numerical]
+	X_test_numerical = X_test.iloc[:,0:num_numerical]
 	distortions = []
 	cluster_range = range(2,31)
 	for clusters in cluster_range:
-		kmean = kmeans(name, clusters, X_train_s_numerical)
+		kmean = kmeans(name, clusters, X_train, X_test)
 		distortions.append(kmean.inertia_)
 
 	fig, ax = plt.subplots(ncols = 2, figsize=(40, 12))
@@ -131,13 +133,14 @@ def create_cluster_plots(name, save = False):
 		annot = ax[0].annotate('{}'.format(txt), (cluster_range[i],distortions[i]))
 		annot.set_fontsize(25)
 
+	X_train_s_numerical = split.standardize(name, X_train_numerical, X_test_numerical)[0]
 	clusters = 7
 	if name == 'dataset_3':
 		clusters = 9
 	ax[1].set_xlim([-0.3, 0.8])
 	ax[1].set_ylim([0, len(X_train_s_numerical) + (clusters + 1) * 10])
 
-	cluster_labels = kmeans(name, clusters, X_train_s_numerical).predict(X_train_s_numerical)
+	cluster_labels = kmeans(name, clusters, X_train, X_test).predict(X_train_s_numerical)
 	silhouette_avg = silhouette_score(X_train_s_numerical, cluster_labels)
 
 	cluster_silhouette = silhouette_samples(X_train_s_numerical, cluster_labels)

@@ -47,7 +47,7 @@ def split_subsets(names, ols = False):
 		sets[name] = splits
 	return sets
 
-def standardize(name, X_train, X_test):
+def standardize(X_train, X_test):
 	"""Splits dataset, one hot encodes categorical variables, and standardizes numerical features.
 
 	Default value for test proportion is 0.25, which should perform well for our data.
@@ -60,9 +60,8 @@ def standardize(name, X_train, X_test):
 	X_train = X_train.copy()
 	X_test = X_test.copy()
 	scaler = StandardScaler()
-	number_numerical = ds.get_number_numerical()[name]
-	X_train.iloc[:,0:number_numerical] = scaler.fit_transform(X_train.iloc[:,0:number_numerical])
-	X_test.iloc[:,0:number_numerical] = scaler.transform(X_test.iloc[:,0:number_numerical])
+	X_train = scaler.fit_transform(X_train)
+	X_test = scaler.transform(X_test)
 
 
 	return X_train, X_test
