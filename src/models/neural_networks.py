@@ -15,53 +15,27 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 
 
-def single_layer_network_randomized_cv(name, n_iter = 30, cv = 5, save = True):
+def single_layer_network_randomized_cv(name, n_iter = 20, cv = 5, save = True):
 	
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	X_train, X_test = split.standardize(name, X_train, X_test)
-	to_score = metrics.create_metrics()[0]
+	X_train, X_test = split.standardize(X_train, X_test)
 	param_grid = {'shape' : [(X_train.shape[1],)],
-	'neurons': np.arange(5,275,5),
-	'batch_size': [4, 8,16,32,64,128,256,512,1028],
-	'epochs': [25,50,100],
-	'learning_rate': np.linspace(1e-4,1,20)}
-
-	param_grid = {'shape' : [(X_train.shape[1],)],
-	'neurons': np.arange(5,275,5),
-	'batch_size': [4, 8,16,32,64,128,256,512,1028],
-	'epochs': [25,50,100],
-	'learning_rate': np.linspace(0.1,1,20)}
-
-	param_grid = {'shape' : [(X_train.shape[1],)],
-	'neurons': np.arange(5,275,5),
-	'batch_size': [16,32,64,128,256,512,1028],
-	'epochs': [25,50,100],
-	'learning_rate': np.linspace(0.1,1,20),
-	'reg': np.geomspace(1e-8, 2, 49),
-	'if_reg': [False, True],
-	'shuffle': [False, True]}
-
-	# param_grid = {'shape' : [(X_train.shape[1],)],
-	# 'neurons': np.arange(20,275,5),
-	# 'batch_size': [1028],
-	# 'epochs': [50],
-	# 'learning_rate': np.linspace(0.1,1,50),
-	# 'reg': np.geomspace(1e-8, 2, 50),
+	'batch_size': [256,512,1028,2056],
+	'epochs': [25,50],
+	'learning_rate':[1e-4,1e-3,1e-2,1e-1,1,10]}
+	# 'reg': np.linspace(1e-4, 750, 500),
 	# 'if_reg': [True],
-	# 'shuffle': [False, True]}
+	# 'shuffle': [False,True]}
+  #kernel_regularizer=regularizers.l2(reg))
 
 
-
-	def single_layer_network(neurons, shape, learning_rate, reg, if_reg):
+	def single_layer_network(shape, learning_rate):
 		"""
 
 		"""
 	
 		net = Sequential()
-		if if_reg:
-			net.add(Dense(neurons, activation='relu', input_shape= shape, kernel_regularizer=regularizers.l2(reg)))
-		else:
-			net.add(Dense(neurons, activation='relu', input_shape= shape))
+		net.add(Dense(45, activation='relu', input_shape= shape))
 		net.add(Dense(1, activation='linear'))
 		optimizer = Adam(learning_rate = learning_rate)
 		net.compile(optimizer=optimizer, loss='mean_squared_error')
@@ -70,28 +44,36 @@ def single_layer_network_randomized_cv(name, n_iter = 30, cv = 5, save = True):
 
 	net = KerasRegressor(build_fn = single_layer_network, verbose = 0, workers=8, use_multiprocessing=True )
 	net_cv = RandomizedSearchCV(estimator = net, param_distributions = param_grid, n_jobs = -1, pre_dispatch = 16, 
-						  refit= False, cv = cv, scoring = to_score, n_iter = n_iter, random_state = 18).fit(X_train, y_train)
+						  refit= True, cv = cv, scoring = 'neg_mean_absolute_error', n_iter = n_iter, 
+						  random_state = 18).fit(X_train, y_train)
 
+
+	display_name = ds.get_names()[name]
+	performance = metrics.apply_metrics('{} Single Layer Neural Network'.format(display_name),
+	y_test, net_cv.predict(X_test) , y_train)
+	performance['Tuning Parameters'] = [net_cv.best_params_]
+
+	
 	if save:
 		to_save_cv = Path().resolve().joinpath('models', 'cross_validation_outcomes',
-		'neural_network', '{}_{}.csv'.format(name, 'randomized_3_10_fold_tss'))
+		'neural_network', '{}.csv'.format(name))
 		results = pd.DataFrame.from_dict(net_cv.cv_results_)
 		results.to_csv(to_save_cv)
+		to_save_perf = Path().resolve().joinpath('models', 'neural_network', '{}_performance.csv'.format(name))
+		performance.to_csv(to_save_perf)
 
-	return net_cv
+	return net_cv, performance
 
 def single_layer_network_grid_cv(name, cv = 5, save = True):
 	
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
-	X_train, X_test = split.standardize(name, X_train, X_test)
-	to_score = metrics.create_metrics()[0]
+	X_train, X_test = split.standardize(X_train, X_test)
 
 	param_grid = {'shape' : [(X_train.shape[1],)],
 	'neurons': np.arange(230),
 	'batch_size': [1028],
 	'epochs': [50],
-	'learning_rate': [0.7],
-	'reg': np.geomspace(1e-8, 2, 50),
+	'reg': np.geomspace(1e-4, 2, 25),
 	'if_reg': [True],
 	'shuffle': [True]}
 
@@ -106,31 +88,32 @@ def single_layer_network_grid_cv(name, cv = 5, save = True):
 
 
 
-	def single_layer_network(neurons, shape, learning_rate, reg, if_reg):
+	def single_layer_network(shape, learning_rate, reg, if_reg):
 		"""
 
 		"""
 	
 		net = Sequential()
 		if if_reg:
-			net.add(Dense(neurons, activation='relu', input_shape= shape, kernel_regularizer=regularizers.l2(reg)))
+			net.add(Dense(45, activation='relu', input_shape= shape, kernel_regularizer=regularizers.l2(reg)))
 		else:
-			net.add(Dense(neurons, activation='relu', input_shape= shape))
+			net.add(Dense(45, activation='relu', input_shape= shape))
 		net.add(Dense(1, activation='linear'))
 		optimizer = Adam(learning_rate = learning_rate)
 		net.compile(optimizer=optimizer, loss='mean_squared_error')
 		return net
 
 
-	net = KerasRegressor(build_fn = single_layer_network, verbose = 0, workers=8, use_multiprocessing=True )
+	net = KerasRegressor(build_fn = single_layer_network, verbose = 0)
 	net_cv = GridSearchCV(estimator = net, param_grid = param_grid, n_jobs = -1, pre_dispatch = 16, 
-						  refit= False, cv = cv, scoring = to_score).fit(X_train, y_train)
+						  refit= True, cv = cv, scoring = 'neg_mean_absolute_error').fit(X_train, y_train)
 
-	if save:
-		to_save_cv = Path().resolve().joinpath('models', 'cross_validation_outcomes',
-		'neural_network', '{}_{}.csv'.format(name, 'grid_10_fold'))
-		results = pd.DataFrame.from_dict(net_cv.cv_results_)
-		results.to_csv(to_save_cv)
+	display_name = ds.get_names()[name]
+	performance = metrics.apply_metrics('{} Single Layer Neural Network'.format(display_name),
+	y_test, net_cv.predict(X_test) , y_train)
+	performance['Tuning Parameters'] = [net_cv.best_params_]
+
+
 
 	return net_cv
 

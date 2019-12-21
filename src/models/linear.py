@@ -46,7 +46,7 @@ def collect_all_statistics(save = False):
 		df = pd.concat([df, stats], axis = 0)
 
 	if save:
-		to_save = Path().resolve().joinpath('models', 'linear', '{}.csv'.format('performance_outcomes_all_10_fold'))
+		to_save = Path().resolve().joinpath('models', 'linear', '{}.csv'.format('performance_outcomes_all'))
 		df.to_csv(to_save)	
 	return df
 
@@ -85,7 +85,7 @@ def ridge(name, cv = 5):
 	display_name = ds.get_names()[name]
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	X_train, X_test= split.standardize(X_train, X_test)
-	alphas = np.linspace(1e-8, 2, 50)
+	alphas = np.linspace(500, 750, 50)
 	model = RidgeCV(alphas=alphas, fit_intercept=True, cv=cv).fit(X_train, y_train)
 	performance = metrics.apply_metrics('{} Ridge'.format(display_name), y_test, model.predict(X_test),y_train)
 	performance['Tuning Parameters'] = [{'Alpha': model.alpha_}]
@@ -122,7 +122,7 @@ def elastic_net(name, cv = 5):
 	display_name = ds.get_names()[name]
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	X_train, X_test= split.standardize(X_train, X_test)
-	l1_ratios = np.geomspace(1e-8,2,50)
+	l1_ratios = np.geomspace(1e-8,1,50)
 	model = ElasticNetCV(l1_ratio=l1_ratios, n_alphas=50, cv = 5, verbose = 0, 
 	                     n_jobs = -1, random_state = 18).fit(X_train, y_train)
 
@@ -139,9 +139,9 @@ def huber(name, cv = 5):
 	X_train, X_test, y_train, y_test, train = split.split_subset(name)
 	X_train, X_test= split.standardize(X_train, X_test)
 	to_score, scoring = metrics.create_metrics()
-	param_grid = {'epsilon': np.linspace(1+1e-8, 1.5, 30),
-	'alpha': np.linspace(1e-8, 2, 30)}
-	model = HuberRegressor(max_iter = 1000, tol = 1e-7)
+	param_grid = {'epsilon': np.linspace(1+1e-15, 1.2, 10),
+	'alpha': np.linspace(1e-8, 2, 10)}
+	model = HuberRegressor()
 	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = 'neg_mean_absolute_error', 
 	                        n_jobs = -1, pre_dispatch = 16, cv = cv,
 	                        refit = True).fit(X_train, y_train)
@@ -160,9 +160,10 @@ def support_vector_machine(name, cv = 5):
 	X_train, X_test = split.standardize(X_train, X_test)
 	to_score, scoring = metrics.create_metrics()
 	param_grid = { 
+	'epsilon': np.linspace(-2,2,4),
 	'fit_intercept': [True],
-	'C': np.geomspace(0.01,0.05, 50),
-	'loss': ['squared_epsilon_insensitive'],
+	'C': np.linspace(1e6,1e10, 50),
+	'loss': ['epsilon_insensitive', 'squared_epsilon_insensitive'],
 	'dual': [False], 'random_state': [18]}
 	model = LinearSVR()
 	model_cv = GridSearchCV(model, param_grid= param_grid, scoring = 'neg_mean_absolute_error', 
